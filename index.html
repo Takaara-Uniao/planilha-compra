@@ -605,6 +605,7 @@ async function sha(t){
 function abrir(){
   $("#login").style.display="none"; $("#app").hidden=false;
   $("#spSenha").style.display = ROLE.tipo==="admin" ? "" : "none"; document.body.classList.toggle("vend", ROLE.tipo==="vend");
+  if (ROLE.tipo==="vend"){ document.querySelector('.aba[data-a="frete"]').style.display="none"; if (aba==="frete") aba="compras"; }
   diaSel=diaInicial(); carregar();
 }
 $("#fLogin").addEventListener("submit",async e=>{
