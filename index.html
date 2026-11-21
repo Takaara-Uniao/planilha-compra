@@ -216,7 +216,7 @@
     <span id="dicaCompras">Compras: preencha as colunas coloridas e as dos vendedores/Pedra. Prev. Venda, Compra Sugerida e Estratégia calculam sozinhas.</span>
     <span id="dicaFrete">Marcos: preencha caixas (1ª coluna de cada linha) e preço (2ª). Custo e Total calculam sozinhos. O nome de cada linha (cabeçalho inclinado) e os nomes dos fornecedores/produtos de baixo podem ser editados clicando no texto; o botão Altura das linhas aumenta ou diminui o tamanho.</span><br>
     A planilha troca sozinha para a semana seguinte (segunda, quarta e sexta) na sexta-feira.
-    &nbsp;·&nbsp;versão 21/11-D<span id="spSenha">&nbsp;·&nbsp;<a id="lnkSenha">Gerar código de nova senha</a></span>
+    &nbsp;·&nbsp;versão 21/11-E<span id="spSenha">&nbsp;·&nbsp;<a id="lnkSenha">Gerar código de nova senha</a></span>
   </div></div>
 </div>
 
@@ -553,9 +553,10 @@ function recalcCompras(){
     let h=0; CCOLS.forEach(c=>{ const v=num(dados[c+r]); tot[c]+=v; h+=v; });
     if (vend) return;
     const est=num(dados["i"+r]), forn=num(dados["k"+r]), l=num(dados["l"+r]);
+    const temEst=String(dados["i"+r]??"").trim()!=="";
     const sug=Math.max(0,h-est), m=est+forn-l;
-    tot.H+=h; tot.S+=sug; tot.M+=m;
-    put("#H"+r,f(h)); put("#J"+r,f(sug));
+    tot.H+=h; if(temEst) tot.S+=sug; tot.M+=m;
+    put("#H"+r,f(h)); put("#J"+r,temEst?f(sug):"");
     const el=$("#M"+r); el.textContent=f(m);
     const T=p[2]; let cls="est";
     if (m<0) cls+=" verm"; else if (T!=null) cls+= m>T?" verde2":" amar";
