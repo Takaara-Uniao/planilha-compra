@@ -62,6 +62,7 @@
   #altBox{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted)}
   #altBox b{color:var(--text-strong);min-width:40px;text-align:center;font-weight:600}
   #altBox button{height:32px;width:32px;padding:0;justify-content:center;font-size:16px}
+  body.vend .folha{min-width:0;width:min(720px,100%)} body.vend table{width:100%!important;min-width:0!important}
   #wrap{padding:16px 24px 24px;overflow-x:auto}
   .folha{background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:16px;box-shadow:var(--shadow-card);padding:16px;min-width:1500px;animation:tkup .22s var(--ease)}
   .rodape{font-size:12px;color:var(--text-muted);margin:12px 4px;line-height:1.5}
@@ -106,7 +107,7 @@
   .comp tr.z td.v{background:#f3f3f3}
   .comp td.calc2{background:#f3f3f3;text-align:center;font-weight:bold;font-size:10px}
   .comp td.sug{color:#980000}
-  .comp td.jj{background:#c9daf8}.comp td.kk{background:#d9ead3}.comp td.ll{background:#a4c2f4}
+  .comp td.sg{background:#c9daf8;color:#274e13;text-align:center;font-weight:bold;font-size:10px}.comp td.jj{background:#c9daf8}.comp td.kk{background:#d9ead3}.comp td.ll{background:#a4c2f4}
   .comp td.jj input,.comp td.kk input{color:#274e13;font-weight:bold}
   .comp td.ll input{color:#1b3a6b;font-weight:bold}
   .comp td.est{text-align:center;font-size:9px;color:#555;background:#f3f3f3}
@@ -213,17 +214,56 @@
     <span id="dicaCompras">Compras: preencha as colunas coloridas e as dos vendedores/Pedra. Prev. Venda, Compra Sugerida e Estratégia calculam sozinhas.</span>
     <span id="dicaFrete">Marcos: preencha caixas (1ª coluna de cada linha) e preço (2ª). Custo e Total calculam sozinhos. O nome de cada linha (cabeçalho inclinado) e os nomes dos fornecedores/produtos de baixo podem ser editados clicando no texto; o botão Altura das linhas aumenta ou diminui o tamanho.</span><br>
     A planilha troca sozinha para a semana seguinte (segunda, quarta e sexta) na sexta-feira.
-    &nbsp;·&nbsp;<a id="lnkSenha">Gerar código de nova senha</a>
+    <span id="spSenha">&nbsp;·&nbsp;<a id="lnkSenha">Gerar código de nova senha</a></span>
   </div></div>
 </div>
 
 <script>
 /* =====================  CONFIGURAÇÃO  ===================== */
-// SHA-256 da senha. Para trocar: clique em "Gerar código de nova senha" no rodapé e cole aqui o resultado.
-const SENHA_HASH = "7ac5a0f5d03a818853f0d3d1387a7e2d189b39106109e99460c55c941e3e54cd";
+// Para trocar uma senha: clique em "Gerar código de nova senha" no rodapé (só aparece para o responsável) e cole o código no lugar do "h" do usuário.
+// Usuários: cada senha (guardada como SHA-256) abre um perfil.
+//   tipo "admin" = responsável (vê e edita tudo);  tipo "vend" = vendedor (vê só a própria coluna).
+const USUARIOS = [
+ {
+  "nome": "Responsável (admin)",
+  "tipo": "admin",
+  "h": "7ac5a0f5d03a818853f0d3d1387a7e2d189b39106109e99460c55c941e3e54cd"
+ },
+ {
+  "nome": "Tharles Marry",
+  "tipo": "vend",
+  "h": "a032c2712396041c404ad5143a3917a06f60733a37f5a0d64b035e225d4127b7",
+  "col": "c"
+ },
+ {
+  "nome": "Marcos Leiva",
+  "tipo": "vend",
+  "h": "0d3e52e235f496ce6525b27f2fd89d672dfbcee00ef41233f142dd4cf0c8cdf5",
+  "col": "d"
+ },
+ {
+  "nome": "Roberto Comar",
+  "tipo": "vend",
+  "h": "d9daa3724b15075784703c12744e4f9bf622ff035932988f669849d13a30615b",
+  "col": "e"
+ },
+ {
+  "nome": "Ivacir Junior",
+  "tipo": "vend",
+  "h": "3498f6f6330e8910c4728d91e09e2d6e28dd2c5d3eb2adcdb3ecb618c3b33635",
+  "col": "f"
+ },
+ {
+  "nome": "Pedra (Ceasa)",
+  "tipo": "vend",
+  "h": "bc28786b78cdb72bdec0d66fa7aaca3f4895dde46662d4354ca1cb25878bd4ba",
+  "col": "g"
+ }
+];
+let ROLE = null;
 // Endereço do Firebase Realtime Database (para todos os vendedores verem o mesmo preenchimento).
 // Exemplo: "https://takaara-frete-default-rtdb.firebaseio.com"   Deixe vazio para salvar só neste aparelho.
-const DB_URL = "";
+const DB_URL = "https://planilha-takaara-default-rtdb.firebaseio.com";
 /* ========================================================== */
 
 const NOVOS = [[120, "ABACATE", null], [168, "ABACAXI", null], [92, "ABOBORA CABOTIAN 500G", null], [50, "AGRIAO", null], [131, "ALHO IMPORTADO", null], [133, "ALHO NACIONAL", null], [53, "BANANA MARMELO", null], [111, "BANANA NANICA", null], [169, "BATATA 25KG", null], [143, "BATATA DIVERSA 25KG", null], [158, "BATATA FLORAO 25KG", null], [129, "BATATA MEDIA 25KG", null], [182, "BATATA PIRULITO 25KG", null], [191, "CEBOLA CONSERVA", null], [62, "CEBOLINHA", null], [84, "COCO SECO", null], [58, "COUVE MANTEIGA 250 GR", null], [70, "ESPINAFRES", null], [72, "HORTELA", null], [174, "LARANJA", null], [183, "LIMAO SICILIANO", null], [124, "MACA GALA", null], [93, "MAMAO FORMOSA", null], [119, "MAMAO PAPAIA", null], [22, "MANDIOCA", null], [115, "MANDIOCA EMBALADA 1KG", null], [196, "MANGA PALMER", null], [113, "MANGA TOMY", null], [140, "MANJERICAO", null], [94, "MARACUJA", null], [24, "MAXIXE", null], [187, "MELANCIA", null], [95, "MELAO AMARELO", null], [145, "MILHO VERDE BANDEJA", null], [139, "MILHO VERDE UN", null], [812, "MINI TOMATE ESPECIAL KG", null], [188, "MORANGO", null], [144, "MOYASHI", null], [74, "NABO", null], [49, "OVOS BRANCO BD", null], [151, "OVOS BRANCO BD C/12", null], [98, "PERA", null], [193, "PIMENTA BIQUINHO", null], [192, "PIMENTA BODE", null], [189, "PIMENTA DE CHEIRO", null], [127, "PIMENTA MALAGUETA KG", null], [75, "RABANETE", null], [76, "RUCULA", null], [78, "SALSINHA", null], [195, "TANGERINA PONKAN", null], [105, "UVA RUBI", null], [147, "UVA THOMPSON", null]];
@@ -300,9 +340,10 @@ async function salvarNomes(){
   if (online()) { try{ await dbPut("frete/linhas",nomes); }catch(e){} }
 }
 
+const filtro = o => { if(!ehVend()||!ehCompras()) return o; const x={}; for(const k in o) if(k[0]===ROLE.col) x[k]=o[k]; return x; };
 async function carregar(){
   const dia = iso(dataDia(diaSel));
-  dados = lsGet(aba+"_"+dia) || {};
+  dados = filtro(lsGet(aba+"_"+dia) || {});
   const nm = lsGet("frete_nomes"); if (nm) nomes = nm;
   desenhar();
   if (online()){
@@ -311,7 +352,7 @@ async function carregar(){
       const ab=aba;
       const [r, n, fo] = await Promise.all([dbGet(ab+"/"+dia), ab==="frete"?dbGet("frete/linhas"):Promise.resolve(null), ab==="frete"?dbGet("frete/forn"):Promise.resolve(null)]);
       if (iso(dataDia(diaSel))!==dia || aba!==ab) return;
-      dados = r || {};
+      dados = filtro(r || {});
       if (fo) { fornData = normForn(fo); lsSet("frete_forn",fornData); }
       if (n) { nomes = Array.isArray(n)?n.map(x=>x||""):Object.assign(NOMES_PADRAO.slice(),n); lsSet("frete_nomes",nomes); }
       desenhar(); setStatus("Sincronizado ✓");
@@ -440,55 +481,78 @@ function recalcular(){
 
 /* ---------- aba COMPRAS ---------- */
 const CCOLS = ["c","d","e","f","g"];           // vendedores + pedra
+const VEND_COL = {c:"THARLES<br>MARRY",d:"MARCOS<br>LEIVA",e:"ROBERTO<br>COMAR",f:"IVACIR<br>JUNIOR",g:"PEDRA<br>(CEASA)"};
+const COLS = [
+  {k:"cod",w:3.5,h:"COD."},{k:"pn",w:17,h:"PRODUTO"},
+  {k:"c",w:6.2},{k:"d",w:6.2},{k:"e",w:6.2},{k:"f",w:6.2},{k:"g",w:6.2},
+  {k:"H",w:5.5,h:"PREV.<br>VENDA"},{k:"i",w:6,h:"ESTOQUE"},{k:"J",w:6.5,h:"COMPRA<br>SUGERIDA"},
+  {k:"k",w:6.5,h:"COMPRA<br>FORNEC."},{k:"l",w:7,h:"VENDA<br>REALIZADA"},{k:"M",w:6.5,h:"ESTRATÉGIA"},{k:"n",w:9,h:"OBSERVAÇÕES"}
+];
+const ehVend = () => ROLE && ROLE.tipo==="vend";
+function colsVisiveis(){
+  if (!ehVend()) return COLS;
+  const v = COLS.filter(c=>c.k==="cod"||c.k==="pn"||c.k===ROLE.col);
+  v[0]={...v[0],w:8}; v[1]={...v[1],w:58}; v[2]={...v[2],w:34};
+  return v;
+}
 function desenharCompras(){
   const dt = dataDia(diaSel);
   $("#forn").style.display="none"; $("#forn").innerHTML="";
-  const w=[3.5,17,6.2,6.2,6.2,6.2,6.2,5.5,6.5,6.5,6,7,6.5,9];
-  const colg='<colgroup>'+w.map(x=>`<col style="width:${x}%">`).join("")+'</colgroup>';
+  const cv = colsVisiveis(), n = cv.length;
+  const colg='<colgroup>'+cv.map(x=>`<col style="width:${x.w}%">`).join("")+'</colgroup>';
   let h=colg+'<thead>';
-  h+=`<tr class="tit"><td colspan="2" class="dt">${br(dt)}</td><td colspan="12" class="nm">UNIÃO DISTRIBUIDORA | TAKAARA  —  ${aba==="novos"?"PRODUTOS NOVOS":"PLANILHA DE COMPRAS"}</td></tr>`;
-  h+='<tr class="sub"><td colspan="14">|    COMPRA SUGERIDA = MAX(0, PREV.VENDA − ESTOQUE)    |    Preço Pedra = 5% desconto sobre Mercado</td></tr>';
-  const hd=["COD.","PRODUTO","THARLES<br>MARRY","MARCOS<br>LEIVA","ROBERTO<br>COMAR","IVACIR<br>JUNIOR","PEDRA<br>(CEASA)","PREV.<br>VENDA","COMPRA<br>SUGERIDA","COMPRA<br>FORNEC.","ESTOQUE","VENDA<br>REALIZADA","ESTRATÉGIA","OBSERVAÇÕES"];
-  h+='<tr>'+hd.map(x=>`<th class="hd">${x}</th>`).join("")+'</tr></thead><tbody>';
+  const nomeAba = aba==="novos"?"PRODUTOS NOVOS":"PLANILHA DE COMPRAS";
+  h+= ehVend() ? `<tr class="tit"><td colspan="${n}" class="nm" style="text-align:center">${br(dt)}  —  TAKAARA  —  ${nomeAba}</td></tr>`
+    : `<tr class="tit"><td colspan="2" class="dt">${br(dt)}</td><td colspan="${n-2}" class="nm">UNIÃO DISTRIBUIDORA | TAKAARA  —  ${nomeAba}</td></tr>`;
+  if (!ehVend()) h+=`<tr class="sub"><td colspan="${n}">|    COMPRA SUGERIDA = MAX(0, PREV.VENDA − ESTOQUE)    |    Preço Pedra = 5% desconto sobre Mercado</td></tr>`;
+  h+='<tr>'+cv.map(c=>`<th class="hd">${c.h||VEND_COL[c.k]}</th>`).join("")+'</tr></thead><tbody>';
   const rows=[];
   lista().forEach((p,r)=>{
-    let h="";
-    const z = r%2===0?" z":"";
-    h+=`<tr class="${z.trim()}"><td class="cod">${p[0]}</td><td class="pn">${p[1]}</td>`;
-    CCOLS.forEach(c=>{ h+=`<td class="in v"><input inputmode="decimal" data-id="${c}${r}" autocomplete="off"></td>`; });
-    h+=`<td class="calc2" id="H${r}">0</td><td class="calc2 sug" id="I${r}">0</td>`;
-    h+=`<td class="in jj"><input inputmode="decimal" data-id="j${r}" autocomplete="off"></td>`;
-    h+=`<td class="in kk"><input inputmode="decimal" data-id="k${r}" autocomplete="off"></td>`;
-    h+=`<td class="in ll"><input inputmode="decimal" data-id="l${r}" autocomplete="off"></td>`;
-    h+=`<td class="est" id="M${r}">0</td>`;
-    h+=`<td class="in ob"><input data-id="n${r}" autocomplete="off"></td></tr>`;
-    rows.push(h);
+    const z = r%2===0?"z":"";
+    let s=`<tr class="${z}">`;
+    cv.forEach(c=>{
+      const k=c.k;
+      if (k==="cod") s+=`<td class="cod">${p[0]}</td>`;
+      else if (k==="pn") s+=`<td class="pn">${p[1]}</td>`;
+      else if (CCOLS.includes(k)) s+=`<td class="in v"><input inputmode="decimal" data-id="${k}${r}" autocomplete="off"></td>`;
+      else if (k==="H") s+=`<td class="calc2" id="H${r}">0</td>`;
+      else if (k==="J") s+=`<td class="calc2 sg" id="J${r}">0</td>`;
+      else if (k==="M") s+=`<td class="est" id="M${r}">0</td>`;
+      else if (k==="n") s+=`<td class="in ob"><input data-id="n${r}" autocomplete="off"></td>`;
+      else s+=`<td class="in ${k==="k"?"kk":k==="l"?"ll":""}"><input inputmode="decimal" data-id="${k}${r}" autocomplete="off"></td>`;
+    });
+    rows.push(s+'</tr>');
   });
   const PB=27;
   const h1=h+rows.slice(0,PB).join("")+'</tbody>';
   h=colg+'<tbody>'+rows.slice(PB).join("");
-  h+='<tr class="tot"><td colspan="2">TOTAIS</td>'+[...CCOLS,"H","I"].map(c=>`<td id="T${c}">0</td>`).join("")+'<td></td><td></td><td></td><td id="TM">0</td><td></td></tr>';
-  h+='<tr class="gap"><td colspan="14" style="border:0"></td></tr><tr class="leg"><td colspan="14">  📝 LEGENDA:  Colunas C–H = preenchimento pelos vendedores (azul).  I = Prev. Venda (automática).  J = Compra Sugerida (automática: Prev − Estoque).  K = Compra Decidida (director preenche).</td></tr></tbody>';
+  h+='<tr class="tot"><td colspan="2">TOTAIS</td>'+cv.slice(2).map(c=>
+      (CCOLS.includes(c.k)||c.k==="H"||c.k==="M") ? `<td id="T${c.k}">0</td>` : c.k==="J" ? '<td id="TS">0</td>' : '<td></td>').join("")+'</tr>';
+  if (!ehVend()) h+=`<tr class="gap"><td colspan="${n}" style="border:0"></td></tr><tr class="leg"><td colspan="${n}">  📝 LEGENDA:  Colunas C–G = preenchimento pelos vendedores (azul).  H = Prev. Venda (automática).  I = Estoque.  J = Compra Sugerida (automática: Prev − Estoque).  K = Compra Fornec. (diretoria preenche).  L = Venda Realizada.</td></tr>`;
+  h+='</tbody>';
   $("#tab").className="comp"; $("#tab").innerHTML=h1;
   $("#tab2").style.display=""; $("#tab2").innerHTML=h;
   document.querySelectorAll("[data-id]").forEach(el=>{ el.value = dados[el.dataset.id] ?? ""; });
   recalcular();
 }
 function recalcCompras(){
-  const tot={c:0,d:0,e:0,f:0,g:0,H:0,I:0,M:0};
-  const f=n=>fmt(n,n%1?2:0);
+  const f=n=>fmt(n,n%1?2:0), vend=ehVend();
+  const tot={c:0,d:0,e:0,f:0,g:0,H:0,S:0,M:0};
+  const put=(id,v)=>{ const e=$(id); if(e) e.textContent=v; };
   lista().forEach((p,r)=>{
     let h=0; CCOLS.forEach(c=>{ const v=num(dados[c+r]); tot[c]+=v; h+=v; });
-    const k=num(dados["k"+r]), j=num(dados["j"+r]), l=num(dados["l"+r]);
-    const i=Math.max(0,h-k), m=k+j-l;
-    tot.H+=h; tot.I+=i; tot.M+=m;
-    $("#H"+r).textContent=f(h); $("#I"+r).textContent=f(i);
+    if (vend) return;
+    const est=num(dados["i"+r]), forn=num(dados["k"+r]), l=num(dados["l"+r]);
+    const sug=Math.max(0,h-est), m=est+forn-l;
+    tot.H+=h; tot.S+=sug; tot.M+=m;
+    put("#H"+r,f(h)); put("#J"+r,f(sug));
     const el=$("#M"+r); el.textContent=f(m);
     const T=p[2]; let cls="est";
     if (m<0) cls+=" verm"; else if (T!=null) cls+= m>T?" verde2":" amar";
     el.className=cls;
   });
-  [...CCOLS,"H","I"].forEach(c=>$("#T"+c).textContent=f(tot[c])); $("#TM").textContent=f(tot.M);
+  CCOLS.forEach(c=>put("#T"+c,f(tot[c])));
+  if (!vend){ put("#TH",f(tot.H)); put("#TS",f(tot.S)); put("#TM",f(tot.M)); }
 }
 
 /* ---------- eventos ---------- */
@@ -528,7 +592,7 @@ function mudaAlt(d){ ALT[aba]=Math.max(14,Math.min(70,ALT[aba]+d)); try{localSto
 $("#bAltM").onclick=()=>mudaAlt(-2); $("#bAltP").onclick=()=>mudaAlt(2);
 $("#lnkSenha").onclick=async()=>{
   const s=prompt("Digite a nova senha:"); if(!s) return;
-  const h=await sha(s); prompt("Copie este código e troque no arquivo, na linha SENHA_HASH:",h);
+  const h=await sha(s); prompt("Copie este código e cole no arquivo, no campo \"h\" do usuário desejado (lista USUARIOS):",h);
 };
 setInterval(atualizar,10000);
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) atualizar(); });
@@ -540,17 +604,19 @@ async function sha(t){
 }
 function abrir(){
   $("#login").style.display="none"; $("#app").hidden=false;
+  $("#spSenha").style.display = ROLE.tipo==="admin" ? "" : "none"; document.body.classList.toggle("vend", ROLE.tipo==="vend");
   diaSel=diaInicial(); carregar();
 }
 $("#fLogin").addEventListener("submit",async e=>{
   e.preventDefault();
   try{
     const h=await sha($("#senha").value);
-    if (h===SENHA_HASH){ try{sessionStorage.setItem("frete_ok",h)}catch(_){} abrir(); }
+    const u=USUARIOS.find(x=>x.h===h);
+    if (u){ ROLE=u; try{sessionStorage.setItem("frete_ok",h)}catch(_){} abrir(); }
     else { $("#err").textContent="Senha incorreta"; $("#senha").value=""; }
   }catch(err){ $("#err").textContent="Abra o link com https:// (endereço seguro)"; }
 });
-try{ localStorage.removeItem("frete_ok"); if (sessionStorage.getItem("frete_ok")===SENHA_HASH) abrir(); }catch(e){}
+try{ localStorage.removeItem("frete_ok"); const hh=sessionStorage.getItem("frete_ok"), u=USUARIOS.find(x=>x.h===hh); if (u){ ROLE=u; abrir(); } }catch(e){}
 </script>
 </body>
 </html>
