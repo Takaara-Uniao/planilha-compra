@@ -137,6 +137,42 @@
   .forn .l .dp{display:none}
   .rodape{font-size:11px;color:#666;margin:10px 4px}
   .rodape a{color:var(--azul);cursor:pointer;text-decoration:underline}
+  /* ---------- Design System aplicado na planilha (SÓ NA TELA; impressão fica igual ao original) ---------- */
+  @media screen{
+    td,th{border-color:var(--border-default)}
+    #tab2 td,#tab2 th{border-top-color:var(--border-default)}
+    td.in{background:#fff}
+    td.in input{font-family:"Urbanist",Arial,sans-serif;color:var(--text-strong)}
+    th.h,.cab{background:var(--surface-sunken);color:var(--text-strong)}
+    .data{background:var(--surface-sunken)}
+    .comp td,.comp th{font-family:"Urbanist",Arial,sans-serif}
+    .comp .tit td{background:var(--green-700)}
+    .comp .tit .dt{color:#fff}
+    .comp .tit .nm{color:#BDE8CC}
+    .comp .sub td{background:var(--surface-sunken);color:var(--text-muted)}
+    .comp th.hd{background:var(--green-600);color:#fff;border-color:var(--green-700)}
+    .comp td.cod,.comp td.pn{color:var(--text-strong)}
+    .comp tr.z td.cod,.comp tr.z td.pn{background:var(--surface-sunken)}
+    .comp tr.z td.v{background:var(--surface-hover)}
+    .comp td.calc2{background:var(--surface-sunken);color:var(--text-strong)}
+    .comp td.sug{color:var(--red-500)}
+    .comp td.sg{background:#DCEAF7;color:var(--green-700)}
+    .comp td.jj{background:#E3EEF9}
+    .comp td.kk{background:#E2F3E7}
+    .comp td.ll{background:#CFE3F5}
+    .comp td.jj input,.comp td.kk input{color:var(--green-700)}
+    .comp td.ll input{color:#17426B}
+    .comp td.est{background:var(--surface-sunken);color:var(--text-muted)}
+    .comp td.est.verde{background:#D5EFDD;color:var(--green-700)}
+    .comp td.est.verde2{background:#BFE6CC;color:var(--green-700)}
+    .comp td.est.amar{background:#FFF1C2;color:#6B5200}
+    .comp td.est.verm{background:#F9D3D1;color:#8F1814}
+    .comp td.ob{background:var(--surface-sunken)}
+    .comp tr.tot td{background:var(--green-700);color:#fff;border-color:var(--green-700)}
+    .comp tr.leg td{background:var(--surface-sunken);color:var(--text-muted)}
+    .forn .l{color:var(--text-body)}
+    .forn .l.h{color:var(--text-brand)}
+  }
   /* ---------- impressão ---------- */
   @page{size:A4 landscape;margin:5mm}
   @media print{
@@ -216,7 +252,7 @@
     <span id="dicaCompras">Compras: preencha as colunas coloridas e as dos vendedores/Pedra. Prev. Venda, Compra Sugerida e Estratégia calculam sozinhas.</span>
     <span id="dicaFrete">Marcos: preencha caixas (1ª coluna de cada linha) e preço (2ª). Custo e Total calculam sozinhos. O nome de cada linha (cabeçalho inclinado) e os nomes dos fornecedores/produtos de baixo podem ser editados clicando no texto; o botão Altura das linhas aumenta ou diminui o tamanho.</span><br>
     A planilha troca sozinha para a semana seguinte (segunda, quarta e sexta) na sexta-feira.
-    &nbsp;·&nbsp;versão 21/11-E<span id="spSenha">&nbsp;·&nbsp;<a id="lnkSenha">Gerar código de nova senha</a></span>
+    &nbsp;·&nbsp;versão 21/11-F<span id="spSenha">&nbsp;·&nbsp;<a id="lnkSenha">Gerar código de nova senha</a></span>
   </div></div>
 </div>
 
