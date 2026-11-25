@@ -173,6 +173,33 @@
     .forn .l{color:var(--text-body)}
     .forn .l.h{color:var(--text-brand)}
   }
+  /* ---------- Responsável: colunas e cabeçalho fixos + destaque da linha/coluna (só na tela) ---------- */
+  @media screen{
+    body:not(.vend) #app:not([hidden]){display:flex;flex-direction:column;height:100vh}
+    body:not(.vend) #bar{position:relative;flex:none}
+    body:not(.vend) #wrap{flex:1;min-height:0;overflow:auto;padding:0}
+    body:not(.vend) #wrap>.folha{margin:16px 24px}
+    body:not(.vend) #wrap>.rodape{margin-left:28px;margin-right:28px}
+    body:not(.vend) table.comp{border-collapse:separate;border-spacing:0}
+    body:not(.vend) table.comp td,body:not(.vend) table.comp th{border-width:0 1px 1px 0}
+    body:not(.vend) table.comp .tit td,body:not(.vend) table.comp .sub td,body:not(.vend) table.comp tr.leg td,body:not(.vend) table.comp tr.gap td{border-width:0}
+    body:not(.vend) table.comp tr.tot td{border-width:0 1px 0 0}
+    body:not(.vend) table.comp th.hd{position:sticky;top:0;z-index:3}
+    body:not(.vend) table.comp th.hd:nth-child(1),body:not(.vend) table.comp td.cod{position:sticky;left:0;z-index:2}
+    body:not(.vend) table.comp td.cod{border-left:1px solid var(--border-default);background-color:var(--surface-sunken)}
+    body:not(.vend) table.comp th.hd:nth-child(2),body:not(.vend) table.comp td.pn{position:sticky;left:var(--lp,60px);z-index:2}
+    body:not(.vend) table.comp td.pn{background-color:var(--surface-sunken);box-shadow:inset -1px 0 0 var(--border-default)}
+    body:not(.vend) table.comp th.hd:nth-child(1),body:not(.vend) table.comp th.hd:nth-child(2){z-index:6}
+    body:not(.vend) table.comp tr.z td.cod,body:not(.vend) table.comp tr.z td.pn{background-color:#E7EEF7}
+    body:not(.vend) table.comp tr.tot td:nth-child(1){position:sticky;left:0;z-index:2}
+    body:not(.vend) table.comp tr.foco td{box-shadow:inset 0 0 0 100px rgba(14,143,69,.17)}
+    body:not(.vend) table.comp td.cf{box-shadow:inset 0 0 0 100px rgba(37,99,235,.14)}
+    body:not(.vend) table.comp tr.foco td.cf{box-shadow:inset 0 0 0 100px rgba(14,143,69,.17),inset 0 0 0 100px rgba(37,99,235,.14)}
+    body:not(.vend) table.comp td.pn{box-shadow:inset -1px 0 0 var(--border-default)}
+    body:not(.vend) table.comp tr.foco td.pn{box-shadow:inset -1px 0 0 var(--border-default),inset 0 0 0 100px rgba(14,143,69,.22)}
+    body:not(.vend) table.comp td.pn.cf{box-shadow:inset -1px 0 0 var(--border-default),inset 0 0 0 100px rgba(37,99,235,.14)}
+    body:not(.vend) table.comp th.hd.cf{background:#F2B134!important;color:#191C18!important}
+  }
   /* ---------- impressão ---------- */
   @page{size:A4 landscape;margin:5mm}
   @media print{
@@ -192,7 +219,7 @@
     table.comp{min-width:0}
     table.comp thead{display:table-row-group}
     table.comp tr{break-inside:avoid}
-    #tab.comp{break-after:page}
+    .comp tr.pb{break-after:page}
     #tab2{margin-top:0!important}
     .comp tbody td,.comp th.hd{height:6.4mm!important}
     .comp .tit td{height:8mm!important}.comp .sub td{height:4mm!important}.comp th.hd{height:9mm!important}
@@ -252,7 +279,7 @@
     <span id="dicaCompras">Compras: preencha as colunas coloridas e as dos vendedores/Pedra. Prev. Venda, Compra Sugerida e Estratégia calculam sozinhas.</span>
     <span id="dicaFrete">Marcos: preencha caixas (1ª coluna de cada linha) e preço (2ª). Custo e Total calculam sozinhos. O nome de cada linha (cabeçalho inclinado) e os nomes dos fornecedores/produtos de baixo podem ser editados clicando no texto; o botão Altura das linhas aumenta ou diminui o tamanho.</span><br>
     A planilha troca sozinha para a semana seguinte (segunda, quarta e sexta) na sexta-feira.
-    &nbsp;·&nbsp;versão 21/11-F<span id="spSenha">&nbsp;·&nbsp;<a id="lnkSenha">Gerar código de nova senha</a></span>
+    &nbsp;·&nbsp;versão 25/11-C<span id="spSenha">&nbsp;·&nbsp;<a id="lnkSenha">Gerar código de nova senha</a></span>
   </div></div>
 </div>
 
@@ -570,17 +597,33 @@ function desenharCompras(){
     rows.push(s+'</tr>');
   });
   const PB=27;
-  const h1=h+rows.slice(0,PB).join("")+'</tbody>';
-  h=colg+'<tbody>'+rows.slice(PB).join("");
+  rows[PB-1]=rows[PB-1].replace('<tr class="','<tr class="pb ');
+  h+=rows.join("");
   h+='<tr class="tot"><td colspan="2">TOTAIS</td>'+cv.slice(2).map(c=>
       (CCOLS.includes(c.k)||c.k==="H"||c.k==="M") ? `<td id="T${c.k}">0</td>` : c.k==="J" ? '<td id="TS">0</td>' : '<td></td>').join("")+'</tr>';
   if (!ehVend()) h+=`<tr class="gap"><td colspan="${n}" style="border:0"></td></tr><tr class="leg"><td colspan="${n}">  📝 LEGENDA:  Colunas C–G = preenchimento pelos vendedores (azul).  H = Prev. Venda (automática).  I = Estoque.  J = Compra Sugerida (automática: Prev − Estoque).  K = Compra Fornec. (diretoria preenche).  L = Venda Realizada.</td></tr>`;
   h+='</tbody>';
-  $("#tab").className="comp"; $("#tab").innerHTML=h1;
-  $("#tab2").style.display=""; $("#tab2").innerHTML=h;
+  $("#tab").className="comp"; $("#tab").innerHTML=h;
+  $("#tab2").style.display="none"; $("#tab2").innerHTML="";
   document.querySelectorAll("[data-id]").forEach(el=>{ el.value = dados[el.dataset.id] ?? ""; });
-  recalcular();
+  recalcular(); fixarPos();
 }
+function fixarPos(){
+  const th=document.querySelector("#tab.comp th.hd"); if(!th) return;
+  document.querySelector("#tab").style.setProperty("--lp",th.offsetWidth+"px");
+}
+window.addEventListener("resize",fixarPos);
+function limparFoco(){ document.querySelectorAll("tr.foco").forEach(x=>x.classList.remove("foco")); document.querySelectorAll(".cf").forEach(x=>x.classList.remove("cf")); }
+document.addEventListener("focusin",e=>{
+  limparFoco();
+  const el=e.target;
+  if (ehVend() || !el.matches || !el.matches("#tab.comp input[data-id]")) return;
+  const tr=el.closest("tr"), td=el.closest("td"); tr.classList.add("foco");
+  const idx=[...tr.cells].indexOf(td), tb=el.closest("table");
+  tb.querySelectorAll("tr").forEach(r=>{ const c=r.cells[idx]; if(c && r.cells.length>idx && (r.querySelector("th.hd")||r.querySelector("input[data-id],td.calc2,td.est,td.cod,td.pn"))) c.classList.add("cf"); });
+});
+document.addEventListener("focusout",e=>{ if(!e.relatedTarget) limparFoco(); });
+window.addEventListener("beforeprint",limparFoco);
 function recalcCompras(){
   const f=n=>fmt(n,n%1?2:0), vend=ehVend();
   const tot={c:0,d:0,e:0,f:0,g:0,H:0,S:0,M:0};
